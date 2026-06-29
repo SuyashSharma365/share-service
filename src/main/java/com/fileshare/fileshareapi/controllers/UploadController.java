@@ -1,7 +1,8 @@
 package com.fileshare.fileshareapi.controllers;
 
 
-import com.fileshare.fileshareapi.service.S3Service;
+import com.fileshare.fileshareapi.model.UploadResponseDto;
+import com.fileshare.fileshareapi.service.ShareService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,17 +16,12 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class UploadController {
 
-    private final S3Service s3Service;
+    private final ShareService shareService;
 
-    @PostMapping("/v1/upload")
-    public ResponseEntity<Boolean> upload(@RequestParam("file") MultipartFile multipartFile) throws IOException {
-        try{
-            s3Service.upload(multipartFile);
-            return ResponseEntity.ok(true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+    @PostMapping("/api/upload")
+    public ResponseEntity<UploadResponseDto> upload(@RequestParam("file") MultipartFile multipartFile) throws IOException {
+        String id =  shareService.upload(multipartFile);
+        return ResponseEntity.ok(UploadResponseDto.builder().Key(id).build());
     }
 
 }
