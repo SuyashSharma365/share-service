@@ -1,6 +1,8 @@
 package com.fileshare.fileshareapi.controllers;
 
 
+import com.fileshare.fileshareapi.Entity.MessageEntity;
+import com.fileshare.fileshareapi.service.MessageService;
 import com.fileshare.fileshareapi.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +18,15 @@ public class RetrieveController {
 
 
     private final S3Service s3Service;
+    private final MessageService messageService;
 
     @GetMapping("/retrieve")
-    public ResponseEntity<byte[]> retrieve(@RequestHeader("object-Id") String objectId){
+    public ResponseEntity<?> retrieve(@RequestHeader("object-Id") String objectId){
+        System.out.println("Received objectId = [" + objectId + "]");
+        MessageEntity messageEntity = messageService.find(objectId);
+        if(messageEntity != null){
+            return ResponseEntity.ok(messageEntity.getMessage());
+        }
         byte[] data = s3Service.retrieve(objectId);
         return ResponseEntity.ok(data);
     }

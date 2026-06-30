@@ -18,6 +18,7 @@ import java.io.IOException;
 public class S3Service {
 
     private final  S3Client s3Client;
+    private final CacheService cacheService;
 
     @Value("${aws.bucket.name}")
     private String bucketName;
@@ -33,7 +34,8 @@ public class S3Service {
         return objectPath;
     }
 
-    public byte[] retrieve(String fileName){
+    public byte[] retrieve(String ObjectId ){
+        String fileName = cacheService.find(ObjectId);
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
