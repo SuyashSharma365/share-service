@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 
 
 @Service
@@ -26,7 +27,13 @@ public class ShareService {
             throw new RuntimeException(e);
         }
     }
-
-
-
+    public void uploadForBoth(String id , MultipartFile multipartFile){
+        try{
+            String path = s3Service.upload(multipartFile);
+            cache.save(id , path);
+            return;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

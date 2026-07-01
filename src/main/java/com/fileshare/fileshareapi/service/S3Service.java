@@ -7,9 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 
@@ -35,12 +33,26 @@ public class S3Service {
     }
 
     public byte[] retrieve(String ObjectId ){
-        String fileName = cacheService.find(ObjectId);
-        GetObjectRequest request = GetObjectRequest.builder()
+        try{
+            String fileName = cacheService.find(ObjectId);
+
+            if(fileName == null){
+                return new byte[0];
+            }
+            GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
                 .build();
-        ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(request);
-        return response.asByteArray();
+            ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(request);
+            return response.asByteArray();
+        } catch (NoSuchKeyException e) {
+            return new byte[0];
+        }
+        catch (S3Exception e){
+            if(e.statusCode() == 404){
+                return new byte[0];
+            }
+            throw e;
+        }
     }
 }

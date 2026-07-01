@@ -2,6 +2,7 @@ package com.fileshare.fileshareapi.controllers;
 
 
 import com.fileshare.fileshareapi.Entity.MessageEntity;
+import com.fileshare.fileshareapi.model.RetrieveResponseDto;
 import com.fileshare.fileshareapi.service.MessageService;
 import com.fileshare.fileshareapi.service.S3Service;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,12 @@ public class RetrieveController {
     private final MessageService messageService;
 
     @GetMapping("/retrieve")
-    public ResponseEntity<?> retrieve(@RequestHeader("object-Id") String objectId){
+    public ResponseEntity<RetrieveResponseDto> retrieve(@RequestHeader("object-Id") String objectId){
         System.out.println("Received objectId = [" + objectId + "]");
         MessageEntity messageEntity = messageService.find(objectId);
-        if(messageEntity != null){
-            return ResponseEntity.ok(messageEntity.getMessage());
-        }
+        String message = messageEntity != null ? messageEntity.getMessage() : null;
         byte[] data = s3Service.retrieve(objectId);
-        return ResponseEntity.ok(data);
+
+        return ResponseEntity.ok(RetrieveResponseDto.builder().message(message).data(data).build());
     }
 }

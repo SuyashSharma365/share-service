@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class MessageDto {
+public class RetrieveResponseDto {
     private String message;
+    private byte[] data;
 }

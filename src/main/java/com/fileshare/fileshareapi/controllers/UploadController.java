@@ -1,7 +1,7 @@
 package com.fileshare.fileshareapi.controllers;
 
 
-import com.fileshare.fileshareapi.model.MessageDto;
+import com.fileshare.fileshareapi.model.RetrieveResponseDto;
 import com.fileshare.fileshareapi.model.UploadResponseDto;
 import com.fileshare.fileshareapi.service.MessageService;
 import com.fileshare.fileshareapi.service.ShareService;
@@ -33,8 +33,13 @@ public class UploadController {
             return ResponseEntity.ok(UploadResponseDto.builder().Key(id).build());
         }
 
-        if((message != null || !message.isBlank()) && multipartFile == null ) {
-            String id = messageService.save(MessageDto.builder().message(message).build());
+        if((message != null && !message.isBlank()) && multipartFile == null ) {
+            String id = messageService.save(RetrieveResponseDto.builder().message(message).build());
+            return ResponseEntity.ok(UploadResponseDto.builder().Key(id).build());
+        }
+
+        if((message != null && !message.isBlank()) && multipartFile != null ) {
+            String id = messageService.saveBoth(RetrieveResponseDto.builder().message(message).build(), multipartFile);
             return ResponseEntity.ok(UploadResponseDto.builder().Key(id).build());
         }
 
