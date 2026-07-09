@@ -1,26 +1,58 @@
-- name: Restart Application
-  uses: appleboy/ssh-action@v1.2.0
-  with:
-    host: ${{ secrets.EC2_HOST }}
-    username: ubuntu
-    key: ${{ secrets.EC2_SSH_KEY }}
-    script: |
-      set -e
+name: Deploy Backend
 
-      cd /home/ubuntu/share-service
+on:
+  push:
+    branches:
+      - main
 
-      pkill -f '.jar' || true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-      sleep 2
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      JAR=$(find . -name "*.jar" | head -n 1)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
 
-      echo "Starting $JAR"
+      - name: Build Project
+        run: mvn clean package -DskipTests
 
-      nohup java -jar "$JAR" > app.log 2>&1 < /dev/null &
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "target/*.jar"
+          target: "/home/ubuntu/share-service"
 
-      disown
+      - name: Restart Application
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
 
-      sleep 5
+            cd /home/ubuntu/share-service
 
-      ps -ef | grep java | grep -v grep
+            pkill -f '.jar' || true
+
+            sleep 2
+
+            JAR=$(find . -name "*.jar" | head -n 1)
+
+            echo "Starting $JAR"
+
+            nohup java -jar "$JAR" > app.log 2>&1 < /dev/null &
+
+            sleep 5
+
+            ps -ef | grep java | grep -v grep
