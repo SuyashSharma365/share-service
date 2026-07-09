@@ -14,6 +14,8 @@ public class CorsConfig implements WebMvcConfigurer{
         registry.addMapping("/**")
                 .allowedOrigins(
                         "http://localhost:3000",
+                        "http://43.204.234.146",
+                        "https://43.204.234.146",
                         "https://dropcode.space",
                         "https://www.dropcode.space"
                 )
